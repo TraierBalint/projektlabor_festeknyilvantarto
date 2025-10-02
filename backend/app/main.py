@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from app.routes import users
+from app.routes import products
 from app.database import Base, engine
 
 
@@ -12,6 +13,7 @@ def on_startup():
 
 # routerek regisztrálása
 app.include_router(users.router)
+app.include_router(products.router)
 
 @app.get("/")
 def root():
