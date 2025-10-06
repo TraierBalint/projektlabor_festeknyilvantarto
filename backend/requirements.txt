@@ -8,3 +8,9 @@ python-dotenv==1.0.1
 # Biztonság és jelszókezelés
 passlib==1.7.4
 bcrypt==4.0.1
+
+# JWT tokenekhez és aláíráshoz
+python-jose[cryptography]==3.5.0
+ecdsa==0.19.1
+rsa==4.9.1
+pyasn1==0.6.1
