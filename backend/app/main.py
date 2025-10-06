@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routes import users, products, carts, orders, inventory
+from app.routes import users, products, carts, orders, inventory, auth
 from app.database import Base, engine
 
 app = FastAPI(title="Festékbolt API")
@@ -10,6 +10,7 @@ app.include_router(products.router)
 app.include_router(carts.router)
 app.include_router(orders.router)
 app.include_router(inventory.router)
+app.include_router(auth.router)
 
 @app.on_event("startup")
 def on_startup():

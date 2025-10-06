@@ -2,20 +2,27 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models
-from app.schemas.user import UserCreate, UserRead, UserLogin
-from app.utils.security import hash_password, verify_password
+from app.schemas.user import UserCreate, UserRead
+from app.utils.security import hash_password, get_current_admin, get_current_user
 from typing import List
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
-# ---- GET: összes user ----
+# ---- GET: összes user (csak admin láthatja) ----
 @router.get("/", response_model=List[UserRead])
-def list_users(db: Session = Depends(get_db)):
+def list_users(
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin)  # csak admin
+):
     return db.query(models.User).all()
 
-# ---- GET: user ID alapján ----
+# ---- GET: user ID alapján (csak bejelentkezett user) ----
 @router.get("/{user_id}", response_model=UserRead)
-def get_user(user_id: int, db: Session = Depends(get_db)):
+def get_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
     user = db.query(models.User).filter(models.User.user_id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -42,11 +49,3 @@ def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_user)
     return db_user
-
-# ---- POST: login ----
-@router.post("/login")
-def login(user_login: UserLogin, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.email == user_login.email).first()
-    if not user or not verify_password(user_login.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="Invalid email or password")
-    return {"message": f"Welcome, {user.name}!", "user_id": user.user_id}
