@@ -16,17 +16,12 @@ def list_users(
 ):
     return db.query(models.User).all()
 
-# ---- GET: user ID alapján (csak bejelentkezett user) ----
-@router.get("/{user_id}", response_model=UserRead)
-def get_user(
-    user_id: int,
-    db: Session = Depends(get_db),
+# ---- GET: Saját profil lekérése (bármilyen role) ----
+@router.get("/me", response_model=UserRead)
+def get_my_user(
     current_user: models.User = Depends(get_current_user)
 ):
-    user = db.query(models.User).filter(models.User.user_id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
+    return current_user
 
 # ---- POST: regisztráció ----
 @router.post("/", response_model=UserRead)
