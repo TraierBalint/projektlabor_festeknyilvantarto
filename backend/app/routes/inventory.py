@@ -5,19 +5,27 @@ from app import models
 from app.schemas.inventory import InventoryCreate, InventoryRead, InventoryUpdate
 from typing import List
 from datetime import datetime
+from app.utils.security import get_current_admin
 
 router = APIRouter(prefix="/inventory", tags=["Inventory"])
 
 
 # ---- Összes raktárbejegyzés lekérése ----
 @router.get("/", response_model=List[InventoryRead])
-def get_all_inventory(db: Session = Depends(get_db)):
+def get_all_inventory(
+    db: Session = Depends(get_db), 
+    current_admin: models.User = Depends(get_current_admin)
+):
     return db.query(models.Inventory).all()
 
 
 # ---- Egy adott bejegyzés lekérése ----
 @router.get("/{inventory_id}", response_model=InventoryRead)
-def get_inventory(inventory_id: int, db: Session = Depends(get_db)):
+def get_inventory(
+    inventory_id: int, 
+    db: Session = Depends(get_db), 
+    current_admin: models.User = Depends(get_current_admin)
+):
     inv = db.query(models.Inventory).filter(models.Inventory.inventory_id == inventory_id).first()
     if not inv:
         raise HTTPException(status_code=404, detail="Inventory record not found")
@@ -26,7 +34,11 @@ def get_inventory(inventory_id: int, db: Session = Depends(get_db)):
 
 # ---- Új raktárbejegyzés létrehozása ----
 @router.post("/", response_model=InventoryRead)
-def create_inventory(inv_data: InventoryCreate, db: Session = Depends(get_db)):
+def create_inventory(
+    inv_data: InventoryCreate, 
+    db: Session = Depends(get_db), 
+    current_admin: models.User = Depends(get_current_admin)
+):
     product = db.query(models.Product).filter(models.Product.product_id == inv_data.product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -44,7 +56,12 @@ def create_inventory(inv_data: InventoryCreate, db: Session = Depends(get_db)):
 
 # ---- Készlet módosítása (pl. csökkenés/raktárváltás) ----
 @router.patch("/{inventory_id}", response_model=InventoryRead)
-def update_inventory(inventory_id: int, update_data: InventoryUpdate, db: Session = Depends(get_db)):
+def update_inventory(
+    inventory_id: int,
+    update_data: InventoryUpdate, 
+    db: Session = Depends(get_db), 
+    current_admin: models.User = Depends(get_current_admin)
+):
     inv = db.query(models.Inventory).filter(models.Inventory.inventory_id == inventory_id).first()
     if not inv:
         raise HTTPException(status_code=404, detail="Inventory record not found")
@@ -62,7 +79,11 @@ def update_inventory(inventory_id: int, update_data: InventoryUpdate, db: Sessio
 
 # ---- Raktárbejegyzés törlése ----
 @router.delete("/{inventory_id}")
-def delete_inventory(inventory_id: int, db: Session = Depends(get_db)):
+def delete_inventory(
+    inventory_id: int, 
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin)
+):
     inv = db.query(models.Inventory).filter(models.Inventory.inventory_id == inventory_id).first()
     if not inv:
         raise HTTPException(status_code=404, detail="Inventory record not found")

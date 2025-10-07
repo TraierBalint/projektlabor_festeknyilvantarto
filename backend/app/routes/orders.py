@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models
 from app.schemas.order import OrderCreate, OrderRead, OrderItemCreate, OrderStatusUpdate, OrderStatus
-
+from app.utils.security import get_current_admin, get_current_user
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
@@ -54,22 +54,36 @@ def create_order(order_data: OrderCreate, db: Session = Depends(get_db)):
 
 # ---- Összes rendelés lekérése ----
 @router.get("/", response_model=list[OrderRead])
-def get_all_orders(db: Session = Depends(get_db)):
+def get_all_orders(db: Session = Depends(get_db), current_admin: models.User = Depends(get_current_admin)):
     return db.query(models.Order).all()
 
 
 # ---- Egy rendelés lekérése ----
 @router.get("/{order_id}", response_model=OrderRead)
-def get_order(order_id: int, db: Session = Depends(get_db)):
+def get_order(
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
     order = db.query(models.Order).filter(models.Order.order_id == order_id).first()
+    
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
+    
+    if current_user.role.value != "admin" and order.user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="You can only view your own orders")
+    
     return order
 
 
 # ---- Státusz frissítése ----
 @router.patch("/{order_id}/status", response_model=OrderRead)
-def update_order_status(order_id: int, status_data: OrderStatusUpdate, db: Session = Depends(get_db)):
+def update_order_status(
+    order_id: int, 
+    status_data: OrderStatusUpdate, 
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin)
+):
     order = db.query(models.Order).filter(models.Order.order_id == order_id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -82,7 +96,11 @@ def update_order_status(order_id: int, status_data: OrderStatusUpdate, db: Sessi
 
 # ---- Rendelés törlése ----
 @router.delete("/{order_id}")
-def delete_order(order_id: int, db: Session = Depends(get_db)):
+def delete_order(
+    order_id: int, 
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin)
+):
     order = db.query(models.Order).filter(models.Order.order_id == order_id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")

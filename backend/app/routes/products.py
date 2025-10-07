@@ -47,7 +47,12 @@ def search_products(name: str | None = None, category: str | None = None, db: Se
 
 # Update
 @router.put("/{product_id}", response_model=ProductRead)
-def update_product(product_id: int, updated_data: ProductBase, db: Session = Depends(get_db)):
+def update_product(
+    product_id: int, 
+    updated_data: ProductBase, 
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin)
+):
     product = db.query(models.Product).filter(models.Product.product_id == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -61,7 +66,11 @@ def update_product(product_id: int, updated_data: ProductBase, db: Session = Dep
 
 # Delete
 @router.delete("/{product_id}", status_code=204)
-def delete_product(product_id: int, db: Session = Depends(get_db)):
+def delete_product(
+    product_id: int,
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin)
+):
     product = db.query(models.Product).filter(models.Product.product_id == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
