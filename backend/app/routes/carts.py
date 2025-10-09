@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models
 from app.schemas.cart import CartCreate, CartRead, CartItemCreate, CartItemRead
+from app.utils.security import get_current_user
 
 router = APIRouter(prefix="/carts", tags=["Carts"])
 
@@ -23,10 +24,18 @@ def create_cart(cart_data: CartCreate, db: Session = Depends(get_db)):
 
 # ---- Termék hozzáadása ----
 @router.post("/{cart_id}/items", response_model=CartItemRead)
-def add_item(cart_id: int, item_data: CartItemCreate, db: Session = Depends(get_db)):
+def add_item(
+    cart_id: int,
+    item_data: CartItemCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
     cart = db.query(models.Cart).filter(models.Cart.cart_id == cart_id).first()
     if not cart:
         raise HTTPException(status_code=404, detail="Cart not found")
+    
+    if current_user.role.value != "admin" and cart.user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="You can only modify your own cart")
 
     product = db.query(models.Product).filter(models.Product.product_id == item_data.product_id).first()
     if not product:
@@ -55,16 +64,34 @@ def add_item(cart_id: int, item_data: CartItemCreate, db: Session = Depends(get_
 
 # ---- Kosár lekérése ----
 @router.get("/{cart_id}", response_model=CartRead)
-def get_cart(cart_id: int, db: Session = Depends(get_db)):
+def get_cart(
+    cart_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
     cart = db.query(models.Cart).filter(models.Cart.cart_id == cart_id).first()
     if not cart:
         raise HTTPException(status_code=404, detail="Cart not found")
+    if current_user.role.value != "admin" and cart.user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="You can only view your own cart")
     return cart
 
 
 # ---- Termék eltávolítása ----
 @router.delete("/{cart_id}/items/{item_id}")
-def delete_item(cart_id: int, item_id: int, db: Session = Depends(get_db)):
+def delete_item(
+    cart_id: int,
+    item_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    cart = db.query(models.Cart).filter(models.Cart.cart_id == cart_id).first()
+    if not cart:
+        raise HTTPException(status_code=404, detail="Cart not found")
+
+    if current_user.role.value != "admin" and cart.user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="You can only modify your own cart")
+
     item = (
         db.query(models.CartItem)
         .filter(models.CartItem.cart_id == cart_id, models.CartItem.cart_item_id == item_id)
@@ -80,10 +107,17 @@ def delete_item(cart_id: int, item_id: int, db: Session = Depends(get_db)):
 
 # ---- Kosár törlése ----
 @router.delete("/{cart_id}")
-def delete_cart(cart_id: int, db: Session = Depends(get_db)):
+def delete_cart(
+    cart_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
     cart = db.query(models.Cart).filter(models.Cart.cart_id == cart_id).first()
     if not cart:
         raise HTTPException(status_code=404, detail="Cart not found")
+    
+    if current_user.role.value != "admin" and cart.user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="You can only delete your own cart")
 
     db.delete(cart)
     db.commit()

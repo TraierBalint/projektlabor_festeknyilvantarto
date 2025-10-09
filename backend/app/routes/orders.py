@@ -54,7 +54,10 @@ def create_order(order_data: OrderCreate, db: Session = Depends(get_db)):
 
 # ---- Összes rendelés lekérése ----
 @router.get("/", response_model=list[OrderRead])
-def get_all_orders(db: Session = Depends(get_db), current_admin: models.User = Depends(get_current_admin)):
+def get_all_orders(
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin)
+):
     return db.query(models.Order).all()
 
 
