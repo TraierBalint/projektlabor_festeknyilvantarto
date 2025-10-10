@@ -11,6 +11,7 @@
 
 
 **Run App**
+- `yarn install`
 - `yarn dev` vagy `yarn vite`
 
 **Run Error because Yarn Version**
