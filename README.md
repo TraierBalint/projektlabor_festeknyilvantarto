@@ -12,7 +12,7 @@
 
 **Run App**
 - `yarn install`
-- `yarn dev` vagy `yarn vite`
+- `yarn dev` vagy `yarn vite` vagy `npm run dev`
 
 **Run Error because Yarn Version**
 - `corepack enable`
