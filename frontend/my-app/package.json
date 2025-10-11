@@ -11,9 +11,13 @@
   },
   "dependencies": {
     "@mantine/core": "^8.3.4",
+    "@mantine/form": "^8.3.4",
     "@mantine/hooks": "^8.3.4",
+    "@mantinex/mantine-logo": "^2.0.0",
+    "@tabler/icons-react": "^3.35.0",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.9.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

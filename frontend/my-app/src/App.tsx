@@ -1,12 +1,27 @@
-import Home from './pages/Home'
+import { MantineProvider } from '@mantine/core';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Home from './pages/Home';
+import About from './pages/About';
+import Contact from './pages/Contact';
+import AuthenticationForm from './pages/AuthenticationForm';
+import Header from './components/Layout/Header';
+import Footer from './components/Layout/Footer';
 
 function App() {
   return (
-    
-    <div>
-      <Home />
-    </div>
-  )
+    <MantineProvider defaultColorScheme="light">
+      <BrowserRouter>
+      <Header />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/rolunk" element={<About />} />
+        <Route path="/kapcsolat" element={<Contact />} />
+        <Route path="/login" element={<AuthenticationForm />} />
+      </Routes>
+      <Footer />
+    </BrowserRouter>
+    </MantineProvider>
+  );
 }
 
-export default App
+export default App;
