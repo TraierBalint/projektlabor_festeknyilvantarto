@@ -32,6 +32,8 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
+def get_password_hash(password: str):
+    return hash_password(password)
 
 # --- Tokenből user kinyerése ---
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):

@@ -14,3 +14,7 @@ python-jose[cryptography]==3.5.0
 ecdsa==0.19.1
 rsa==4.9.1
 pyasn1==0.6.1
+
+# Data loading és feldolgozás
+pandas==2.2.3
+faker==30.8.2
