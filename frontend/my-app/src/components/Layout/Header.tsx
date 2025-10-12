@@ -38,7 +38,6 @@ export default function Header() {
     <Box pb={120}>
       <header className={classes.header}>
         <Group justify="space-between" h="100%">
-          <MantineLogo size={30} />
 
           <Group h="100%" gap={0} visibleFrom="sm">
             <Button component={Link} to="/" variant="subtle">Főoldal</Button>

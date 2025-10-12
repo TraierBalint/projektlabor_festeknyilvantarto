@@ -1,7 +1,8 @@
 import { SimpleGrid, Image, Card } from '@mantine/core'
 
 const images = [
-  '.../public/festekbolt1.jpg',
+  // Files in Vite/React public/ are served from the root path
+  '/festekbolt1.png',
   'https://images.unsplash.com/photo-1505577058444-a3dab90d4253?w=600',
 ]
 

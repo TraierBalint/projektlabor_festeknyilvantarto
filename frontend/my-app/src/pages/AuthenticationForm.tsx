@@ -33,7 +33,7 @@ export default function AuthenticationForm(props: PaperProps) {
   return (
     <Paper radius="md" p="lg" withBorder {...props}>
       <Text size="lg" fw={500}>
-        Welcome to Mantine, {type}
+        Üdvözöljük a Festékbolt {type === 'login' ? 'bejelentkezési' : 'regisztrációs'} oldalán!
       </Text>
 
       <form onSubmit={form.onSubmit(() => {})}>
