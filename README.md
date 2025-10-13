@@ -12,12 +12,10 @@
 
 **Run App**
 - `yarn install`
+- `yarn add vite --dev`
+- `npm install -D postcss postcss- preset-mantine`
 - `yarn dev` vagy `yarn vite` vagy `npm run dev`
 
 **Run Error because Yarn Version**
 - `corepack enable`
 - `corepack prepare yarn@4.4.1 --activate`
-
-**Axios Download**
-- `npm install axios`
-- `npm install --save-dev @types/axios`
