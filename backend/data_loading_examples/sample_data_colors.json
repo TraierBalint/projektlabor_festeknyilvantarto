@@ -1,0 +1,92 @@
+[
+  {
+    "name": "Pure White",
+    "hex_code": "#FFFFFF",
+    "rgb_code": "rgb(255, 255, 255)",
+    "available": true
+  },
+  {
+    "name": "Deep Ocean Blue",
+    "hex_code": "#003366",
+    "rgb_code": "rgb(0, 51, 102)",
+    "available": true
+  },
+  {
+    "name": "Forest Green",
+    "hex_code": "#228B22",
+    "rgb_code": "rgb(34, 139, 34)",
+    "available": true
+  },
+  {
+    "name": "Crimson Red",
+    "hex_code": "#DC143C",
+    "rgb_code": "rgb(220, 20, 60)",
+    "available": true
+  },
+  {
+    "name": "Sunset Orange",
+    "hex_code": "#FF8C00",
+    "rgb_code": "rgb(255, 140, 0)",
+    "available": true
+  },
+  {
+    "name": "Royal Purple",
+    "hex_code": "#663399",
+    "rgb_code": "rgb(102, 51, 153)",
+    "available": true
+  },
+  {
+    "name": "Golden Yellow",
+    "hex_code": "#FFD700",
+    "rgb_code": "rgb(255, 215, 0)",
+    "available": true
+  },
+  {
+    "name": "Charcoal Black",
+    "hex_code": "#36454F",
+    "rgb_code": "rgb(54, 69, 79)",
+    "available": true
+  },
+  {
+    "name": "Soft Pink",
+    "hex_code": "#FFB6C1",
+    "rgb_code": "rgb(255, 182, 193)",
+    "available": true
+  },
+  {
+    "name": "Mint Green",
+    "hex_code": "#98FB98",
+    "rgb_code": "rgb(152, 251, 152)",
+    "available": false
+  },
+  {
+    "name": "Sky Blue",
+    "hex_code": "#87CEEB",
+    "rgb_code": "rgb(135, 206, 235)",
+    "available": true
+  },
+  {
+    "name": "Lavender",
+    "hex_code": "#E6E6FA",
+    "rgb_code": "rgb(230, 230, 250)",
+    "available": true
+  },
+  {
+    "name": "Coral",
+    "hex_code": "#FF7F50",
+    "rgb_code": "rgb(255, 127, 80)",
+    "available": false
+  },
+  {
+    "name": "Sage Green",
+    "hex_code": "#9CAF88",
+    "rgb_code": "rgb(156, 175, 136)",
+    "available": true
+  },
+  {
+    "name": "Burgundy",
+    "hex_code": "#800020",
+    "rgb_code": "rgb(128, 0, 32)",
+    "available": true
+  }
+]
