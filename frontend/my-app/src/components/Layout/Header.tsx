@@ -37,43 +37,12 @@ export default function Header() {
                 <IconShoppingCart size={22} />
               </ActionIcon>
             </Indicator>
-            <Button component={Link} to="/login" variant="default">Log in</Button>
+            <Button component={Link} to="/login" variant="default">{localStorage.getItem('user_name') ? localStorage.getItem('user_name') : "Bejelentkezés / Regisztráció"}</Button>
           </Group>
 
           <Burger opened={drawerOpened} onClick={toggleDrawer} hiddenFrom="sm" />
         </Group>
       </header>
-
-      <Drawer
-        opened={drawerOpened}
-        onClose={closeDrawer}
-        size="100%"
-        padding="md"
-        title="Navigation"
-        hiddenFrom="sm"
-        zIndex={1000000}
-      >
-        <ScrollArea h="calc(100vh - 80px" mx="-md">
-          <Divider my="sm" />
-
-          <a href="#" className={classes.link}>
-            Home
-          </a>
-          <a href="#" className={classes.link}>
-            Learn
-          </a>
-          <a href="#" className={classes.link}>
-            Academy
-          </a>
-
-          <Divider my="sm" />
-
-          <Group justify="center" grow pb="xl" px="md">
-            <Button variant="default">Log in</Button>
-            <Button>Sign up</Button>
-          </Group>
-        </ScrollArea>
-      </Drawer>
     </Box>
   );
 }

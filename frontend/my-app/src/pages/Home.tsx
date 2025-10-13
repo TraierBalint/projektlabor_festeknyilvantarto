@@ -19,7 +19,7 @@ export default function Home() {
         }}
       >
         <Container size="md" style={{ textAlign: 'center' }}>
-          <Title order={1} size="3rem">Üdvözöl a Fastékbolt!</Title>
+          <Title order={1} size="3rem">Üdvözöl a Festékbolt!</Title>
           <Text size="xl" mt="md">
             Minőségi festékek, szerszámok és szakértelem — már 1998 óta.
           </Text>

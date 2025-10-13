@@ -20,7 +20,6 @@ type CartItem = {
 };
 
 export default function Cart() {
-  // Példakosár (később backendből jön majd)
   const [cart, setCart] = useState<CartItem[]>([
     {
       id: 1,
