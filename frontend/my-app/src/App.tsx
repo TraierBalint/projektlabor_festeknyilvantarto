@@ -7,6 +7,8 @@ import Contact from './pages/Contact';
 import AuthenticationForm from './pages/AuthenticationForm';
 import Header from './components/Layout/Header';
 import Footer from './components/Layout/Footer';
+import Shop from './pages/Webshop';
+import Cart from './pages/Cart';
 
 function App() {
   return (
@@ -18,6 +20,8 @@ function App() {
         <Route path="/rolunk" element={<About />} />
         <Route path="/kapcsolat" element={<Contact />} />
         <Route path="/login" element={<AuthenticationForm />} />
+        <Route path="/termekek" element={<Shop />} />
+        <Route path="/kosar" element={<Cart />} />
       </Routes>
       <Footer />
     </BrowserRouter>

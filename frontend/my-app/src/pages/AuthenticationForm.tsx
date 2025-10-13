@@ -2,7 +2,6 @@ import {
   Anchor,
   Button,
   Checkbox,
-  Divider,
   Group,
   Paper,
   PaperProps,
@@ -20,13 +19,14 @@ export default function AuthenticationForm(props: PaperProps) {
     initialValues: {
       email: '',
       name: '',
+      phone: '',
       password: '',
       terms: true,
     },
 
     validate: {
       email: (val) => (/^\S+@\S+$/.test(val) ? null : 'Invalid email'),
-      password: (val) => (val.length <= 6 ? 'Password should include at least 6 characters' : null),
+      password: (val) => (val.length < 6 ? 'Password should include at least 6 characters' : null),
     },
   });
 
@@ -40,6 +40,7 @@ export default function AuthenticationForm(props: PaperProps) {
         <Stack>
           {type === 'register' && (
             <TextInput
+              required
               label="Name"
               placeholder="Your name"
               value={form.values.name}
@@ -57,6 +58,17 @@ export default function AuthenticationForm(props: PaperProps) {
             error={form.errors.email && 'Invalid email'}
             radius="md"
           />
+
+          {type === 'register' && (
+            <TextInput
+              required
+              label="Phone Number"
+              placeholder="Your phone number"
+              value={form.values.phone}
+              onChange={(event) => form.setFieldValue('name', event.currentTarget.value)}
+              radius="md"
+            />
+          )}
 
           <PasswordInput
             required
@@ -84,7 +96,7 @@ export default function AuthenticationForm(props: PaperProps) {
               : "Don't have an account? Register"}
           </Anchor>
           <Button type="submit" radius="xl">
-            {upperFirst(type)}
+            {upperFirst(type === 'login' ? 'bejelentkezés' : 'regisztráció')}
           </Button>
         </Group>
       </form>

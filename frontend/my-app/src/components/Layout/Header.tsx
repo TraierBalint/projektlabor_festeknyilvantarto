@@ -1,32 +1,17 @@
+import { IconShoppingCart } from '@tabler/icons-react';
 import {
-  IconBook,
-  IconChartPie3,
-  IconChevronDown,
-  IconCode,
-  IconCoin,
-  IconFingerprint,
-  IconNotification,
-} from '@tabler/icons-react';
-import {
-  Anchor,
   Box,
   Burger,
   Button,
-  Center,
-  Collapse,
   Divider,
   Drawer,
   Group,
-  HoverCard,
   ScrollArea,
-  SimpleGrid,
-  Text,
-  ThemeIcon,
-  UnstyledButton,
   useMantineTheme,
+  Indicator, 
+  ActionIcon,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { MantineLogo } from '@mantinex/mantine-logo';
 import { Link } from 'react-router-dom';
 import classes from './Header.module.css';
 
@@ -41,11 +26,17 @@ export default function Header() {
 
           <Group h="100%" gap={0} visibleFrom="sm">
             <Button component={Link} to="/" variant="subtle">Főoldal</Button>
+            <Button component={Link} to="/termekek" variant="subtle">Termékek</Button>
             <Button component={Link} to="/rolunk" variant="subtle">Rólunk</Button>
             <Button component={Link} to="/kapcsolat" variant="subtle">Kapcsolat</Button>
           </Group>
 
           <Group visibleFrom="sm">
+            <Indicator label="0" color="red" size={16}>
+              <ActionIcon component={Link} to="/kosar" variant="light" color="blue" size="lg" radius="xl">
+                <IconShoppingCart size={22} />
+              </ActionIcon>
+            </Indicator>
             <Button component={Link} to="/login" variant="default">Log in</Button>
           </Group>
 
