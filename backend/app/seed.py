@@ -37,8 +37,8 @@ def seed_data():
     # --- Products ---
     if db.query(models.Product).count() == 0:
         products = [
-            models.Product(name="Alma", price=300),
-            models.Product(name="Banán", price=400),
+            models.Product(name="Piros", price=300),
+            models.Product(name="Zöld", price=400),
         ]
         db.add_all(products)
         print("Products seeded")
