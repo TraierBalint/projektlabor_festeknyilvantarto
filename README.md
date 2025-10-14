@@ -14,6 +14,7 @@
 - `yarn install`
 - `yarn add vite --dev`
 - `npm install -D postcss postcss- preset-mantine`
+- `uvicorn app.main:app --reload`
 - `yarn dev` vagy `yarn vite` vagy `npm run dev`
 
 **Run Error because Yarn Version**

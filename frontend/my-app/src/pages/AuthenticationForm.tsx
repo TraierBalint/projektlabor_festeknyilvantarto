@@ -86,6 +86,7 @@ export default function AuthenticationForm(props: PaperProps) {
         localStorage.setItem('token', data.access_token || '');
         localStorage.setItem('user_id', JSON.stringify(data.user.user_id)|| '');
         localStorage.setItem('user_name', data.user.name || '');
+        window.location.reload();
         navigate('/');
       }
 
