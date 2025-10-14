@@ -25,6 +25,7 @@ class CartCreate(CartBase):
 class CartRead(CartBase):
     cart_id: int
     created_at: datetime
+    ordered: bool
     items: List[CartItemRead] = []
 
     class Config:

@@ -91,6 +91,7 @@ class Cart(Base):
     cart_id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.user_id'))
     created_at = Column(DateTime, default=datetime.utcnow)
+    ordered = Column(Boolean, default=False)
     
     user = relationship("User", back_populates="carts")
     items = relationship("CartItem", back_populates="cart")

@@ -76,6 +76,26 @@ def get_cart(
         raise HTTPException(status_code=403, detail="You can only view your own cart")
     return cart
 
+# --- Felhasználó aktív kosarának lekérése ---
+@router.get("/user/{user_id}/active", response_model=CartRead)
+def get_active_cart(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    if current_user.role.value != "admin" and current_user.user_id != user_id:
+        raise HTTPException(status_code=403, detail=f"You can only view your own cart {current_user.user_id}")
+
+    cart = (
+        db.query(models.Cart)
+        .filter(models.Cart.user_id == user_id, models.Cart.ordered == False)
+        .order_by(models.Cart.created_at.desc())
+        .first()
+    )
+    if not cart:
+        raise HTTPException(status_code=404, detail="No active cart found for this user")
+    return cart
+
 
 # ---- Termék eltávolítása ----
 @router.delete("/{cart_id}/items/{item_id}")

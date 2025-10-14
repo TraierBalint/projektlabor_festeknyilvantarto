@@ -31,14 +31,13 @@ class OrderBase(BaseModel):
     user_id: int
 
 class OrderCreate(OrderBase):
-    items: List[OrderItemCreate]
+    cart_id: int
 
 class OrderRead(OrderBase):
     order_id: int
     status: OrderStatus
     total_price: float
     created_at: datetime
-    items: List[OrderItemRead] = []
 
     class Config:
         orm_mode = True

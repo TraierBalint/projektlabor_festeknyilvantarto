@@ -10,46 +10,52 @@ router = APIRouter(prefix="/orders", tags=["Orders"])
 
 # ---- Rendelés létrehozása ----
 @router.post("/", response_model=OrderRead)
-def create_order(order_data: OrderCreate, db: Session = Depends(get_db)):
+def create_order(order_data: OrderCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     user = db.query(models.User).filter(models.User.user_id == order_data.user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    if current_user.role.value != "admin" and order_data.user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="You can only create orders for yourself")
 
-    # kiszámoljuk az összesített árat
-    total_price = 0
-    order_items = []
-    for item in order_data.items:
-        product = db.query(models.Product).filter(models.Product.product_id == item.product_id).first()
-        if not product:
-            raise HTTPException(status_code=404, detail=f"Product {item.product_id} not found")
-        total_price += product.price * item.quantity
-        order_items.append(
-            models.OrderItem(
-                product_id=item.product_id,
-                quantity=item.quantity,
-                unit_price=product.price
-            )
-        )
+    # kosár kikeresése
+    cart = db.query(models.Cart).filter(models.Cart.cart_id == order_data.cart_id).first()
+    if not cart:
+        raise HTTPException(status_code=404, detail="Cart not found")
+    if cart.ordered:
+        raise HTTPException(status_code=400, detail="Cart has already been ordered")
+    if cart.user_id != order_data.user_id:
+        raise HTTPException(status_code=400, detail="Cart does not belong to the user")
 
-    # létrehozzuk a rendelést
-    order = models.Order(
-        user_id=order_data.user_id,
-        total_price=total_price
-    )
+    # kosár elemek lekérése
+    cart_items = db.query(models.CartItem).filter(models.CartItem.cart_id == cart.cart_id).all()
+    if not cart_items:
+        raise HTTPException(status_code=400, detail="Cart is empty")
+
+    # összeg kiszámolása és rendelés létrehozása
+    total_price = sum(item.quantity * item.product.price for item in cart_items)
+    order = models.Order(user_id=order_data.user_id, total_price=total_price)
 
     db.add(order)
     db.commit()
     db.refresh(order)
 
-    # hozzárendeljük az itemeket
-    for item in order_items:
-        item.order_id = order.order_id
-        db.add(item)
+    # rendelés tételek hozzáadása
+    for item in cart_items:
+        order_item = models.OrderItem(
+            order_id=order.order_id,
+            product_id=item.product_id,
+            quantity=item.quantity,
+            unit_price=item.product.price
+        )
+        db.add(order_item)
 
+    # kosarat lezárjuk
+    cart.ordered = True
     db.commit()
     db.refresh(order)
 
     return order
+
 
 
 # ---- Összes rendelés lekérése ----

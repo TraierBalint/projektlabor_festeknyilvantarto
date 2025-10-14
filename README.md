@@ -19,3 +19,7 @@
 **Run Error because Yarn Version**
 - `corepack enable`
 - `corepack prepare yarn@4.4.1 --activate`
+
+**DB migration**
+- `alembic revision --autogenerate -m "message"`
+- `alembic upgrade head` 
