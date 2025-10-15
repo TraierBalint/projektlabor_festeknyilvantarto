@@ -67,6 +67,9 @@ export default function Shop() {
     } catch (err: any) {
       setNotif({ type: 'error', message: err.message || 'Hiba történt.' });
     }
+
+    localStorage.setItem('cart_updated', Date.now().toString()); 
+    window.dispatchEvent(new Event('cartUpdated')); 
   };
 
   if (loading) {

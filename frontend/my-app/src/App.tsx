@@ -9,6 +9,7 @@ import Header from './components/Layout/Header';
 import Footer from './components/Layout/Footer';
 import Shop from './pages/Webshop';
 import Cart from './pages/Cart';
+import Checkout from './pages/CheckOut';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/login" element={<AuthenticationForm />} />
         <Route path="/termekek" element={<Shop />} />
         <Route path="/kosar" element={<Cart />} />
+        <Route path="/order" element={<Checkout />} />
       </Routes>
       <Footer />
     </BrowserRouter>

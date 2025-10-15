@@ -12,7 +12,7 @@ import {
   Loader,
   Stack,
 } from '@mantine/core';
-import { data } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 
 type Product = { product_id: number; name: string; price: number; image: string };
@@ -21,12 +21,12 @@ type CartItem = { id: number; name: string; price: number; quantity: number; ima
 
 export default function Cart() {
     const [cartitem, setCartItem] = useState<CartItem[]>([]);
-    const [loading, setLoading] = useState(true);
+    const cart_id = localStorage.getItem('cart_id');
   
     useEffect(() => {
     const fetchData = async () => {
       try {
-        const responseCart = await fetch(`http://127.0.0.1:8000/carts/${localStorage.getItem('cart_id')}`,
+        const responseCart = await fetch(`http://127.0.0.1:8000/carts/${cart_id}`,
         {
         method: 'GET',
         headers: {
@@ -87,7 +87,7 @@ export default function Cart() {
   } catch (err: any) {
     console.error('Hiba történt a kosár törlésekor:', err.message || err);
   }
-};
+  };
 
 
   return (
@@ -139,7 +139,7 @@ export default function Cart() {
               <Button variant="light" color="red" onClick={clearCart}>
                 Kosár ürítése
               </Button>
-              <Button color="green">Tovább a fizetéshez</Button>
+              <Button component={Link} to="/order" color="green">Tovább a fizetéshez</Button>
             </Group>
           </Stack>
         </>

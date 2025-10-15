@@ -12,12 +12,42 @@ import {
   ActionIcon,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import classes from './Header.module.css';
 
 export default function Header() {
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false);
   const theme = useMantineTheme();
+  const [cartItems, setCartItems] = useState(0);
+
+  useEffect(() => {
+  async function fetchCart() {
+    const cart_id = localStorage.getItem('cart_id');
+    if (!cart_id) return;
+
+    const res = await fetch(`http://127.0.0.1:8000/carts/${cart_id}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    const cartData = await res.json();
+    const totalQuantity = cartData.items.reduce((sum: number, item: { quantity: number }) => sum + item.quantity, 0);
+    setCartItems(totalQuantity);
+  }
+
+  fetchCart();
+
+  const handleCartChange = () => {
+    fetchCart();
+  };
+
+  window.addEventListener('cartUpdated', handleCartChange);
+
+  return () => window.removeEventListener('cartUpdated', handleCartChange);
+}, []);
+
 
   return (
     <Box pb={120}>
@@ -32,7 +62,7 @@ export default function Header() {
           </Group>
 
           <Group visibleFrom="sm">
-            <Indicator label="0" color="red" size={16}>
+            <Indicator label={cartItems} color="red" size={16}>
               <ActionIcon component={Link} to="/kosar" variant="light" color="blue" size="lg" radius="xl">
                 <IconShoppingCart size={22} />
               </ActionIcon>
