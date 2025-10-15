@@ -23,3 +23,7 @@
 **DB migration**
 - `alembic revision --autogenerate -m "message"`
 - `alembic upgrade head` 
+
+**Run Backend**
+- `python -m uvicorn app.main:app --reload` on Windows
+- `uvicorn app.main:app --reload` on Mac
