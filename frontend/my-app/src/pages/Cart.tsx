@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Container,
+  Center,
   Title,
   Table,
   Image,
@@ -8,40 +9,86 @@ import {
   Group,
   Button,
   Divider,
+  Loader,
   Stack,
 } from '@mantine/core';
+import { data } from 'react-router-dom';
 
-type CartItem = {
-  id: number;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
-};
+
+type Product = { product_id: number; name: string; price: number; image: string };
+type CartItemAPI = { id: number; product_id: number; quantity: number };
+type CartItem = { id: number; name: string; price: number; quantity: number; image: string };
 
 export default function Cart() {
-  const [cart, setCart] = useState<CartItem[]>([
-    {
-      id: 1,
-      name: 'Beltéri falfesték – Fehér 5L',
-      price: 7990,
-      quantity: 1,
-      image:
-        'https://images.unsplash.com/photo-1600749402468-9bbdbd6a1f2e?auto=format&fit=crop&w=600&q=80',
-    },
-    {
-      id: 2,
-      name: 'Falfesték hengerkészlet',
-      price: 2290,
-      quantity: 2,
-      image:
-        'https://images.unsplash.com/photo-1592078615290-037c1bb6e3b4?auto=format&fit=crop&w=600&q=80',
-    },
-  ]);
+    const [cartitem, setCartItem] = useState<CartItem[]>([]);
+    const [loading, setLoading] = useState(true);
+  
+    useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const responseCart = await fetch(`http://127.0.0.1:8000/carts/${localStorage.getItem('cart_id')}`,
+        {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },})
+        const cartData = await responseCart.json();
+        const items: CartItemAPI[] = cartData.items;
 
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        const resProducts = await fetch('http://127.0.0.1:8000/products');
+        const products: Product[] = await resProducts.json();
 
-  const clearCart = () => setCart([]);
+        const merged: CartItem[] = items.map((item) => { const product = products.find((p) => p.product_id === item.product_id);
+          return {
+            id: item.product_id,
+            quantity: item.quantity,
+            name: product?.name || 'Ismeretlen termék',
+            price: product?.price || 0,
+            image: product?.image || '',
+          };
+        });
+
+        setCartItem(merged);
+      } catch (err) {
+        console.error('Hiba a kosár betöltésekor:', err);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const total = cartitem.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const clearCart = async () => {
+  const cartId = localStorage.getItem('cart_id');
+  const token = localStorage.getItem('token');
+
+  if (!cartId || !token) {
+    console.error('Nincs bejelentkezett felhasználó vagy kosár.');
+    return;
+  }
+
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/carts/${cartId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('A kosár törlése sikertelen.');
+    }
+
+    setCartItem([]);
+    localStorage.removeItem('cart_id');
+  } catch (err: any) {
+    console.error('Hiba történt a kosár törlésekor:', err.message || err);
+  }
+};
+
 
   return (
     <Container size="lg" py="xl">
@@ -49,7 +96,7 @@ export default function Cart() {
         Kosár
       </Title>
 
-      {cart.length === 0 ? (
+      {cartitem.length === 0 ? (
         <Text align="center" size="lg" c="dimmed">
           A kosár üres 😔
         </Text>
@@ -65,17 +112,10 @@ export default function Cart() {
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {cart.map((item) => (
+              {cartitem.map((item) => (
                 <Table.Tr key={item.id}>
                   <Table.Td>
                     <Group>
-                      <Image
-                        src={item.image}
-                        width={60}
-                        height={60}
-                        radius="sm"
-                        alt={item.name}
-                      />
                       <Text fw={500}>{item.name}</Text>
                     </Group>
                   </Table.Td>

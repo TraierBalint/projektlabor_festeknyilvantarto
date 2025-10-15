@@ -23,7 +23,6 @@ export default function Shop() {
   }, []);
 
   const handleAddToCart = async (productId: number) => {
-    console.log('Adding product to cart:', productId);
     const token = localStorage.getItem('token');
     if (!token) {
       setNotif({ type: 'error', message: 'Kérlek, jelentkezz be a vásárláshoz.' });
@@ -80,6 +79,16 @@ export default function Shop() {
 
   return (
     <Container size="lg" py="xl">
+      {notif && (
+        <Notification
+          color={notif.type === 'success' ? 'green' : 'red'}
+          title={notif.type === 'success' ? 'Siker' : 'Hiba'}
+          mt="md"
+          onClose={() => setNotif(null)}
+        >
+          {notif.message}
+        </Notification>
+      )}
       <Title order={1} align="center" mb="sm">
         Webshop termékek
       </Title>

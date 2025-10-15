@@ -86,12 +86,22 @@ export default function AuthenticationForm(props: PaperProps) {
         localStorage.setItem('token', data.access_token || '');
         localStorage.setItem('user_id', JSON.stringify(data.user.user_id)|| '');
         localStorage.setItem('user_name', data.user.name || '');
-        window.location.reload();
+        let user_id = data.user.user_id;
+        response = await fetch(`http://127.0.0.1:8000/carts/user/${user_id}/active`, {
+          method: 'GET',
+          headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${data.access_token}`,
+          },
+        }).then((res) => res.json())
+        localStorage.setItem('cart_id', JSON.stringify(response.cart_id)|| '');
         navigate('/');
+        window.location.reload();
       }
 
       if (type === 'register') {
         navigate('/login');
+        window.location.reload();
       }
 
       setSuccess(true);
