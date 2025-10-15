@@ -48,7 +48,7 @@ export default function Shop() {
     }
 
     // Add product to cart
-    const cartId = localStorage.getItem('cart_id');
+    let cartId = localStorage.getItem('cart_id');
     response = await fetch(`http://127.0.0.1:8000/carts/${cartId}/items`, {
       method: 'POST',
       headers: {
