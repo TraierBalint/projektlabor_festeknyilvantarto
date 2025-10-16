@@ -7,7 +7,7 @@ export default function Home() {
       {/* Hero szekció */}
       <Box
         style={{
-          backgroundImage: '.../public/festekbolt1.jpg',
+          backgroundImage: 'url(/festekbolt2.jpg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           height: '60vh',
