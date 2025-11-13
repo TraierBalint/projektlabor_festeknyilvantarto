@@ -22,7 +22,7 @@ export default function Shop() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleAddToCart = async (productId: number) => {
+  const handleAddToCart = async (productId: number, quantity: number) => {
     const token = localStorage.getItem('token');
     if (!token) {
       setNotif({ type: 'error', message: 'Kérlek, jelentkezz be a vásárláshoz.' });
@@ -56,7 +56,7 @@ export default function Shop() {
       },      
         body: JSON.stringify({
         "product_id": productId,
-        "quantity": 1,
+        "quantity": quantity,
       }),
     });
 
@@ -69,7 +69,7 @@ export default function Shop() {
     }
 
     localStorage.setItem('cart_updated', Date.now().toString()); 
-    window.dispatchEvent(new Event('cartUpdated')); 
+    window.dispatchEvent(new Event('cartUpdated'));
   };
 
   if (loading) {
@@ -95,9 +95,6 @@ export default function Shop() {
       <Title order={1} align="center" mb="sm">
         Webshop termékek
       </Title>
-      <Text align="center" c="dimmed" mb="xl">
-        A termékek a FastAPI backendről érkeznek.
-      </Text>
 
       <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="lg">
         {products.map((p) => (

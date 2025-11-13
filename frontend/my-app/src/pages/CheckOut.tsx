@@ -115,9 +115,10 @@ export default function Checkout() {
         console.log(response);
         setOrderSent(true);
         setTimeout(() => {
-          
+          localStorage.setItem('cart_updated', Date.now().toString()); 
+          window.dispatchEvent(new Event('cartUpdated'));
+          navigate('/');
         }, 2000);
-        navigate('/');
     };
 
     if (loading) {

@@ -24,7 +24,10 @@ export default function Header() {
   useEffect(() => {
   async function fetchCart() {
     const cart_id = localStorage.getItem('cart_id');
-    if (!cart_id) return;
+    if (!cart_id) {
+        setCartItems(0);
+        return;
+      }
 
     const res = await fetch(`http://127.0.0.1:8000/carts/${cart_id}`, {
       headers: {

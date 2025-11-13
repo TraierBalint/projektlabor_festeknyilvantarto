@@ -84,6 +84,9 @@ export default function Cart() {
 
     setCartItem([]);
     localStorage.removeItem('cart_id');
+
+    localStorage.setItem('cart_updated', Date.now().toString()); 
+    window.dispatchEvent(new Event('cartUpdated'));
   } catch (err: any) {
     console.error('Hiba történt a kosár törlésekor:', err.message || err);
   }
