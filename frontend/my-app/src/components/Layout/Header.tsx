@@ -21,6 +21,19 @@ export default function Header() {
   const theme = useMantineTheme();
   const [cartItems, setCartItems] = useState(0);
 
+  const [userName, setUserName] = useState(localStorage.getItem('user_name') || '');
+
+  // figyelés a user_name változására (pl. logout esetén)
+  useEffect(() => {
+    const handleUserChange = () => {
+      setUserName(localStorage.getItem('user_name') || '');
+    };
+    window.addEventListener('userLoggedOut', handleUserChange);
+    return () => {
+      window.removeEventListener('userLoggedOut', handleUserChange);
+    };
+  }, []);
+
   useEffect(() => {
   async function fetchCart() {
     const cart_id = localStorage.getItem('cart_id');
@@ -70,7 +83,14 @@ export default function Header() {
                 <IconShoppingCart size={22} />
               </ActionIcon>
             </Indicator>
-            <Button component={Link} to="/login" variant="default">{localStorage.getItem('user_name') ? localStorage.getItem('user_name') : "Bejelentkezés / Regisztráció"}</Button>
+            <Button
+              component={Link}
+              to={userName ? '/profil' : '/login'}
+              variant="default"
+            >
+              {userName ? userName : 'Bejelentkezés / Regisztráció'}
+            </Button>
+
           </Group>
 
           <Burger opened={drawerOpened} onClick={toggleDrawer} hiddenFrom="sm" />

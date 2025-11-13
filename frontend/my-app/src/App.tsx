@@ -10,6 +10,7 @@ import Footer from './components/Layout/Footer';
 import Shop from './pages/Webshop';
 import Cart from './pages/Cart';
 import Checkout from './pages/CheckOut';
+import Profil from './pages/Profil';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route path="/termekek" element={<Shop />} />
         <Route path="/kosar" element={<Cart />} />
         <Route path="/order" element={<Checkout />} />
+        <Route path="/profil" element={<Profil />} />
       </Routes>
       <Footer />
     </BrowserRouter>
