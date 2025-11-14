@@ -1,19 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
-  IconCalendarStats,
-  IconDeviceDesktopAnalytics,
   IconFingerprint,
-  IconGauge,
   IconHome2,
   IconLogout,
   IconSettings,
-  IconSwitchHorizontal,
   IconUser,
+  IconPackage,
 } from '@tabler/icons-react';
 import { Center, Stack, Tooltip, UnstyledButton, Notification } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
-import { MantineLogo } from '@mantinex/mantine-logo';
 import classes from './ProfilNavbar.module.css';
+import { useProfile } from '../../context/ProfileContext';
 
 interface NavbarLinkProps {
   icon: typeof IconHome2;
@@ -25,64 +22,67 @@ interface NavbarLinkProps {
 function NavbarLink({ icon: Icon, label, active, onClick }: NavbarLinkProps) {
   return (
     <Tooltip label={label} position="right" transitionProps={{ duration: 0 }}>
-      <UnstyledButton onClick={onClick} className={classes.link} data-active={active || undefined}>
+      <UnstyledButton
+        onClick={onClick}
+        className={classes.link}
+        data-active={active || undefined}
+      >
         <Icon size={20} stroke={1.5} />
       </UnstyledButton>
     </Tooltip>
   );
 }
 
-const mockdata = [
-  { icon: IconHome2, label: 'Home' },
-  { icon: IconGauge, label: 'Dashboard' },
-  { icon: IconDeviceDesktopAnalytics, label: 'Analytics' },
-  { icon: IconCalendarStats, label: 'Releases' },
-  { icon: IconUser, label: 'Account' },
-  { icon: IconFingerprint, label: 'Security' },
-  { icon: IconSettings, label: 'Settings' },
+const defaultLinks = [
+  { icon: IconUser, label: 'Fiókod' },
+  { icon: IconPackage, label: 'Rendelésid' },
+  { icon: IconFingerprint, label: 'Biztonság' },
+  { icon: IconSettings, label: 'Beállítások' },
 ];
 
 export default function ProfilNavbar() {
   const navigate = useNavigate();
-  const [active, setActive] = useState(2);
-  const [notifOpen, setNotifOpen] = useState(false); // notification állapot
+  const { activeSection, setActiveSection } = useProfile();
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    setUserRole(localStorage.getItem('user_role')); // admin vagy user
+  }, []);
+
+  // Példa: ha admin, több menüpontot adhatunk hozzá
+  const links = userRole === 'admin'
+    ? [...defaultLinks, { icon: IconHome2, label: 'Admin Panel' }]
+    : defaultLinks;
 
   const handleLogout = () => {
     localStorage.clear();
     window.dispatchEvent(new Event('userLoggedOut'));
-    setNotifOpen(true); // notification megjelenítése
-    setTimeout(() => {
-      navigate('/'); // 1-2 másodperc késleltetés
-    }, 1500);
+    setNotifOpen(true);
+    setTimeout(() => navigate('/'), 1500);
   };
-
-  const links = mockdata.map((link, index) => (
-    <NavbarLink
-      {...link}
-      key={link.label}
-      active={index === active}
-      onClick={() => setActive(index)}
-    />
-  ));
 
   return (
     <nav className={classes.navbar}>
-      <Center>
-        <MantineLogo type="mark" size={30} />
-      </Center>
-
       <div className={classes.navbarMain}>
         <Stack justify="center" gap={0}>
-          {links}
+          {links.map((link) => {
+            const key = link.label.toLowerCase();
+            return (
+              <NavbarLink
+                key={link.label}
+                icon={link.icon}
+                label={link.label}
+                active={activeSection === key}
+                onClick={() => setActiveSection(key)}
+              />
+            );
+          })}
         </Stack>
       </div>
 
       <Stack justify="center" gap={0}>
-        <NavbarLink 
-          icon={IconLogout} 
-          label="Logout" 
-          onClick={handleLogout} 
-        />
+        <NavbarLink icon={IconLogout} label="Logout" onClick={handleLogout} />
       </Stack>
 
       {notifOpen && (
@@ -92,7 +92,7 @@ export default function ProfilNavbar() {
           onClose={() => setNotifOpen(false)}
           styles={{ root: { position: 'fixed', top: 20, right: 20, zIndex: 999 } }}
         >
-          Most kijelentkeztél a fiókodból.
+          Sikeres kijelentkezés a fiókodból.
         </Notification>
       )}
     </nav>

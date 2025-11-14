@@ -1,18 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Anchor,
-  Alert,
-  Button,
-  Checkbox,
-  Group,
-  Paper,
-  PaperProps,
-  PasswordInput,
-  Stack,
-  Text,
-  TextInput,
-} from '@mantine/core';
+import { Anchor, Alert, Button, Checkbox, Group, Paper, PaperProps, PasswordInput, Stack, Text, TextInput, } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { upperFirst, useToggle } from '@mantine/hooks';
 
@@ -21,6 +9,7 @@ export default function AuthenticationForm(props: PaperProps) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [type, toggle] = useToggle(['login', 'register']);
+  const [notifOpen, setNotifOpen] = useState(false);
   const navigate = useNavigate();
   const form = useForm({
     initialValues: {
@@ -87,6 +76,7 @@ export default function AuthenticationForm(props: PaperProps) {
         localStorage.setItem('user_id', JSON.stringify(data.user.user_id)|| '');
         localStorage.setItem('user_name', data.user.name || '');
         let user_id = data.user.user_id;
+        // Get active cart for the user
         response = await fetch(`http://127.0.0.1:8000/carts/user/${user_id}/active`, {
           method: 'GET',
           headers: { 
@@ -95,16 +85,32 @@ export default function AuthenticationForm(props: PaperProps) {
           },
         }).then((res) => res.json())
         localStorage.setItem('cart_id', JSON.stringify(response.cart_id)|| '');
-        navigate('/');
-        window.location.reload();
+
+        // User role request
+        const res = await fetch('http://127.0.0.1:8000/users/me', {
+            headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${data.access_token}`,
+            },
+        }).then((res) => res.json());
+        localStorage.setItem('user_role', res.role || 'user');
+        setSuccess(true);
+        setTimeout(() => {
+          navigate('/');
+          window.location.reload();
+        }, 1500);
+
       }
 
       if (type === 'register') {
-        navigate('/login');
-        window.location.reload();
+        setSuccess(true);
+        setTimeout(() => {
+          navigate('/login');
+          window.location.reload();
+        }, 1500);
       }
 
-      setSuccess(true);
+      
     } catch (err: any) {
       setError(err.message || 'Hiba történt.');
     } finally {
