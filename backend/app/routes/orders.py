@@ -67,6 +67,18 @@ def get_all_orders(
     return db.query(models.Order).all()
 
 
+# ---- Felhasználó rendeléseinek lekérése ----
+@router.get("/user/{user_id}", response_model=list[OrderRead])
+def get_user_orders(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    if current_user.role.value != "admin" and user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="You can only view your own orders")
+    
+    return db.query(models.Order).filter(models.Order.user_id == user_id).all()
+
 # ---- Egy rendelés lekérése ----
 @router.get("/{order_id}", response_model=OrderRead)
 def get_order(
