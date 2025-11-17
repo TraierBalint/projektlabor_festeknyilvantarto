@@ -44,3 +44,20 @@ class OrderRead(OrderBase):
 
 class OrderStatusUpdate(BaseModel):
     status: OrderStatus
+
+
+# --- Statistics response schemas ---
+class OrderStatsItem(BaseModel):
+    period: str
+    orders: int
+    revenue: float
+
+
+class OrderStatsResponse(BaseModel):
+    interval: str
+    start: datetime
+    end: datetime
+    data: List[OrderStatsItem]
+
+    class Config:
+        orm_mode = True

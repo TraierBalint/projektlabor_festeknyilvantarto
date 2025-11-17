@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import users, products, carts, orders, inventory, auth
+from app.routes import users, products, carts, orders, inventory, auth, statistics
 from app.database import Base, engine
 
 app = FastAPI(title="Festékbolt API")
@@ -12,6 +12,7 @@ app.include_router(carts.router)
 app.include_router(orders.router)
 app.include_router(inventory.router)
 app.include_router(auth.router)
+app.include_router(statistics.router)
 
 @app.on_event("startup")
 def on_startup():
