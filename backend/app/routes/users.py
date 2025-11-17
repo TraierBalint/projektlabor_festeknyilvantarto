@@ -23,6 +23,45 @@ def get_my_user(
 ):
     return current_user
 
+# ---- GET: felhasználó lekérése ID alapján (csak admin láthatja) ----
+@router.get("/{user_id}", response_model=UserRead)
+def get_user_by_id(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin)  # csak admin
+):
+    user = db.query(models.User).filter(models.User.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+# ---- PUT: felhasználó adatainak frissítése (saját adatok, vagy admin) ----
+@router.put("/{user_id}", response_model=UserRead)
+def update_user(
+    user_id: int,
+    user_data: UserCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    user = db.query(models.User).filter(models.User.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if current_user.role.value != "admin" and current_user.user_id != user_id:
+        raise HTTPException(status_code=403, detail="You can only update your own profile")
+
+    user.name = user_data.name
+    user.email = user_data.email
+    if user_data.password:
+        user.password_hash = hash_password(user_data.password)
+    user.phone = user_data.phone
+    user.address = user_data.address
+    user.role = user_data.role
+
+    db.commit()
+    db.refresh(user)
+    return user
+
 # ---- POST: regisztráció ----
 @router.post("/", response_model=UserRead)
 def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
@@ -44,3 +83,18 @@ def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_user)
     return db_user
+
+# --- DELETE: felhasználó törlése ID alapján (csak admin törölhet) ----
+@router.delete("/{user_id}", response_model=UserRead)
+def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin)  # csak admin
+):
+    user = db.query(models.User).filter(models.User.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    db.delete(user)
+    db.commit()
+    return f"{user_id} User deleted successfully"
