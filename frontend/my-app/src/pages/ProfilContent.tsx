@@ -31,22 +31,32 @@ type Orders = {
   total_price: number;
 }
 
+type Inventory = {
+  product_id: number;
+  location: string;
+  inventory_id: number;
+  quantity: number;
+}
+
 export default function ProfileContent() {
     const { activeSection } = useProfile();
     const [user, setUser] = useState<User | null>(null);
     const [userRole, setUserRole] = useState<string | null>(null);
+    const [users, setUsers] = useState<Users[]>([]);
     const userId = localStorage.getItem('user_id');
     const [orders, setOrders] = useState<Orders[]>([]);
     const [yourOrders, setYourOrders] = useState<Orders[]>([]);
-    const [users, setUsers] = useState<Users[]>([]);
     const [orderItems, setOrderItems] = useState<Record<number, CartItem[]>>({});
+    const [products, setProducts] = useState<Product[]>([]);
     const [openOrder, setOpenOrder] = useState<number | null>(null);
+    const [inventory, setInventory] = useState<Inventory[]>([]);
     const [interval, setInterval] = useState<"daily" | "weekly" | "monthly" | "yearly">("daily");
     const [stats, setStats] = useState<any>(null);
     const [loadingStats, setLoadingStats] = useState(true);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [successInv, setSuccessInv] = useState<string | false>(false);
     const [error, setError] = useState("");
 
     useEffect(() => {
@@ -71,6 +81,26 @@ export default function ProfileContent() {
             }
         };
         fetchUser();
+    }, []);
+
+     useEffect(() => {
+      const fetchProducts = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          const res = await fetch("http://127.0.0.1:8000/products", {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (!res.ok) throw new Error("Hiba a termékek betöltésekor.");
+          const data: Product[] = await res.json();
+          setProducts(data);
+        } catch (err: any) {
+          console.error(err.message);
+        }
+      };
+      fetchProducts();
     }, []);
 
     // Fetch user role from localStorage
@@ -147,6 +177,31 @@ export default function ProfileContent() {
     };
     fetchUsers();
     }, [userRole]);
+
+    // Fetch inventory if user is admin
+    useEffect(() => {
+      if (userRole !== 'admin') return;
+      const fetchInventory = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          const res = await fetch("http://127.0.0.1:8000/inventory/", {
+            headers: { 
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (!res.ok) throw new Error("Hiba a készletek betöltésekor.");
+          const data: Inventory[] = await res.json();
+          setInventory(data);
+        } catch (err: any) {
+          console.error(err.message);
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchInventory();
+      }, [userRole]);
 
     // Fetch stats when interval changes
     useEffect(() => {
@@ -612,6 +667,102 @@ export default function ProfileContent() {
               </Stack>
             )}
           </>
+        );
+      }
+
+      case "készletek":
+        if (userRole === "admin") {
+        const handleQuantityChange = (id: number, value: number) => {
+          setInventory((prev) =>
+            prev.map((inv) => (inv.inventory_id === id ? { ...inv, quantity: value } : inv))
+          );
+        };
+
+        const handleSaveInventory = async (inv: Inventory) => {
+          setSuccess(false);
+          setError("");
+          setSaving(false);
+          try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`http://127.0.0.1:8000/inventory/${inv.inventory_id}`, {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                product_id: inv.product_id,
+                location: inv.location,
+                quantity: inv.quantity,
+              }),
+            });
+
+            if (!res.ok) throw new Error("Hiba a mentés során.");
+            setSuccess(true);
+            setSuccessInv(`Sikeresen mentve: ${inv.location}`);
+          } catch (err: any) {
+            console.error(err.message);
+            setError(err.message);
+          } finally {
+            setSaving(false);
+          }
+        };
+
+        if (loading) return <p>Betöltés...</p>;
+
+        return (
+          <Stack spacing="md" style={{ width: "100%" }}>
+            <Center mb="lg">
+              <Title order={2}>Készletek</Title>
+            </Center>
+
+            {inventory.map((inv) => {
+              const productName =
+                products.find((p) => p.product_id === inv.product_id)?.name || "Ismeretlen termék";
+
+              return (
+                <Card key={inv.inventory_id} shadow="sm" padding="lg" radius="md" withBorder>
+                  <Stack spacing="sm">
+                    <Box>
+                      <strong>Helyszín:</strong> {inv.location}
+                    </Box>
+                    <Box>
+                      <strong>Termék ID:</strong> {inv.product_id} <strong>Név:</strong> {productName}
+                    </Box>
+                    <Group spacing="sm" align="flex-end">
+                      <TextInput
+                        label="Mennyiség"
+                        type="number"
+                        value={inv.quantity}
+                        onChange={(e) =>
+                          handleQuantityChange(inv.inventory_id, Number(e.currentTarget.value))
+                        }
+                        style={{ maxWidth: 120 }}
+                      />
+                      <Button
+                        color="blue"
+                        onClick={() => handleSaveInventory(inv)}
+                      >
+                        Mentés
+                      </Button>
+                    </Group>
+                  </Stack>
+                </Card>
+              );
+            })}
+
+            {success && (
+              <Notification color="green" onClose={() => setSuccess(false)}>
+                {successInv}
+              </Notification>
+            )}
+
+            {error && (
+              <Notification color="red" onClose={() => setError("")}>
+                {error}
+              </Notification>
+            )}
+          </Stack>
         );
       }
 

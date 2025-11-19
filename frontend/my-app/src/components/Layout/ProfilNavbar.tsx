@@ -9,6 +9,7 @@ import {
   IconPackage,
   IconPackages,
   IconChartBar,
+  IconBuildingWarehouse,
 } from '@tabler/icons-react';
 import { Center, Stack, Tooltip, UnstyledButton, Notification } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
@@ -58,6 +59,7 @@ export default function ProfilNavbar() {
       ...defaultLinks,
       { icon: IconUsers, label: 'Felhasználók' },
       { icon: IconPackages, label: 'Rendelések' },
+      { icon: IconBuildingWarehouse, label: 'Készletek' },
       { icon: IconChartBar, label: 'Statisztikák' },
     ]
   : defaultLinks;
