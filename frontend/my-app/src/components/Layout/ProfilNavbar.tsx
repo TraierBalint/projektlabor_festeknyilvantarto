@@ -5,7 +5,10 @@ import {
   IconLogout,
   IconSettings,
   IconUser,
+  IconUsers,
   IconPackage,
+  IconPackages,
+  IconChartBar,
 } from '@tabler/icons-react';
 import { Center, Stack, Tooltip, UnstyledButton, Notification } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
@@ -50,10 +53,15 @@ export default function ProfilNavbar() {
     setUserRole(localStorage.getItem('user_role')); // admin vagy user
   }, []);
 
-  // Példa: ha admin, több menüpontot adhatunk hozzá
   const links = userRole === 'admin'
-    ? [...defaultLinks, { icon: IconHome2, label: 'Admin Panel' }]
-    : defaultLinks;
+  ? [
+      ...defaultLinks,
+      { icon: IconUsers, label: 'Felhasználók' },
+      { icon: IconPackages, label: 'Rendelések' },
+      { icon: IconChartBar, label: 'Statisztikák' },
+    ]
+  : defaultLinks;
+
 
   const handleLogout = () => {
     localStorage.clear();

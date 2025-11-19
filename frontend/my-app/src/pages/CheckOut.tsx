@@ -138,10 +138,10 @@ export default function Checkout() {
       {/* Felhasználói adatok */}
       <Card mb="xl" shadow="sm" padding="lg" withBorder>
         <Title order={3} mb="sm">Felhasználó adatok</Title>
-        <Text><strong>Név:</strong> {user.name}</Text>
-        <Text><strong>Email:</strong> {user.email}</Text>
-        <Text><strong>Telefonszám:</strong> {user.phone}</Text>
-        <Text><strong>Cím:</strong> {user.address}</Text>
+        <Text><strong>Név:</strong> {user?.name}</Text>
+        <Text><strong>Email:</strong> {user?.email}</Text>
+        <Text><strong>Telefonszám:</strong> {user?.phone}</Text>
+        <Text><strong>Cím:</strong> {user?.address}</Text>
       </Card>
 
       {/* Kosár tartalma */}
