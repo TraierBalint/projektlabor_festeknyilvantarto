@@ -96,6 +96,22 @@ def get_order(
     
     return order
 
+# ---- Rendelés tételeinek lekérése ----
+@router.get("/{order_id}/items", response_model=list[OrderItemCreate])
+def get_order_items(
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    order = db.query(models.Order).filter(models.Order.order_id == order_id).first()
+    
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    if current_user.role.value != "admin" and order.user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="You can only view your own orders")
+    
+    return db.query(models.OrderItem).filter(models.OrderItem.order_id == order_id).all()
 
 # ---- Státusz frissítése ----
 @router.patch("/{order_id}/status", response_model=OrderRead)
