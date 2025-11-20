@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models
-from app.schemas.user import UserCreate, UserRead
+from app.schemas.user import UserCreate, UserRead, UserUpdate
 from app.utils.security import hash_password, get_current_admin, get_current_user
 from typing import List
 
@@ -39,7 +39,7 @@ def get_user_by_id(
 @router.put("/{user_id}", response_model=UserRead)
 def update_user(
     user_id: int,
-    user_data: UserCreate,
+    user_data: UserUpdate,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
@@ -50,17 +50,29 @@ def update_user(
     if current_user.role.value != "admin" and current_user.user_id != user_id:
         raise HTTPException(status_code=403, detail="You can only update your own profile")
 
-    user.name = user_data.name
-    user.email = user_data.email
-    if user_data.password:
+    # Csak a megadott mezőket frissítjük
+    if user_data.name is not None:
+        user.name = user_data.name
+    if user_data.email is not None:
+        # ellenőrizzük, hogy az email egyedi-e
+        existing = db.query(models.User).filter(models.User.email == user_data.email, models.User.user_id != user_id).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already in use")
+        user.email = user_data.email
+    if user_data.password is not None:
         user.password_hash = hash_password(user_data.password)
-    user.phone = user_data.phone
-    user.address = user_data.address
-    user.role = user_data.role
+    if user_data.phone is not None:
+        user.phone = user_data.phone
+    if user_data.address is not None:
+        user.address = user_data.address
+    if user_data.role is not None and current_user.role.value == "admin":
+        user.role = user_data.role
 
     db.commit()
     db.refresh(user)
     return user
+
+
 
 # ---- POST: regisztráció ----
 @router.post("/", response_model=UserRead)
