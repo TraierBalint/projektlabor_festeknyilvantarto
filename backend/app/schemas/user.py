@@ -40,4 +40,5 @@ class UserUpdate(BaseModel):
     password: Optional[str] = None
     phone: Optional[str] = None
     address: Optional[str] = None
+    role: Optional[UserRole] = None
 

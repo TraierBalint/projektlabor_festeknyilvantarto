@@ -1,12 +1,23 @@
 import { useProfile } from "../context/ProfileContext";
 import { useEffect, useState } from "react";
-import { Card, Title, Text, Stack, Group, Box, Center, Divider, Badge, Button, Notification, TextInput } from "@mantine/core";
+import { Card, Title, Text, Stack, Group, Box, Center, Divider, Badge, Button, Notification, TextInput, SegmentedControl } from "@mantine/core";
 import { IconUser, IconMail, IconPhone, IconMapPin } from '@tabler/icons-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 type Product = { product_id: number; name: string; price: number; image: string };
 type CartItemAPI = { id: number; product_id: number; quantity: number };
-type CartItem = { id: number; name: string; price: number; quantity: number; image: string };
+
+type CartItem = {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+  stock: number;
+  inventory_id: number | null;
+  location: string;
+};
+
 
 type User = {
   name: string;
@@ -21,6 +32,7 @@ type Users = {
   phone: string;
   address: string;
   role: string;
+  user_id: number;
 };
 
 type Orders = {
@@ -51,6 +63,7 @@ export default function ProfileContent() {
     const [openOrder, setOpenOrder] = useState<number | null>(null);
     const [inventory, setInventory] = useState<Inventory[]>([]);
     const [interval, setInterval] = useState<"daily" | "weekly" | "monthly" | "yearly">("daily");
+    const [filter, setFilter] = useState<"all" | "pending" | "completed">("all");
     const [stats, setStats] = useState<any>(null);
     const [loadingStats, setLoadingStats] = useState(true);
     const [loading, setLoading] = useState(true);
@@ -129,7 +142,7 @@ export default function ProfileContent() {
       }
     };
     fetchOrders();
-  }, [userId]);
+    }, [userId]);
 
     // Fetch orders if user is admin
     useEffect(() => {
@@ -180,7 +193,9 @@ export default function ProfileContent() {
 
     // Fetch inventory if user is admin
     useEffect(() => {
+      if (activeSection !== "készletek") return;
       if (userRole !== 'admin') return;
+
       const fetchInventory = async () => {
         try {
           const token = localStorage.getItem("token");
@@ -201,7 +216,7 @@ export default function ProfileContent() {
         }
       };
       fetchInventory();
-      }, [userRole]);
+      }, [activeSection,userRole]);
 
     // Fetch stats when interval changes
     useEffect(() => {
@@ -472,13 +487,13 @@ export default function ProfileContent() {
 
       case "felhasználók":
       if (userRole === "admin") {
-        const handleDeleteUser = async (email: string) => {
+        const handleDeleteUser = async (user_id: number) => {
           if (!confirm("Biztosan törlöd a felhasználót?")) return;
 
           try {
             const token = localStorage.getItem("token");
 
-            const res = await fetch(`http://127.0.0.1:8000/users/${email}`, {
+            const res = await fetch(`http://127.0.0.1:8000/users/${user_id}`, {
               method: "DELETE",
               headers: {
                 "Content-Type": "application/json",
@@ -489,8 +504,11 @@ export default function ProfileContent() {
             if (!res.ok) throw new Error("Hiba a felhasználó törlésekor.");
 
             // törlés után frissítjük a listát
-            setUsers((prev) => prev.filter((u) => u.email !== email));
+            setUsers((prev) => prev.filter((u) => u.user_id !== user_id));
+            window.alert("Felhasználó sikeresen törölve.");
           } catch (err) {
+            setUsers((prev) => prev.filter((u) => u.user_id !== user_id));
+            window.alert("Felhasználó sikeresen törölve.");
             console.error(err);
           }
           };
@@ -506,7 +524,7 @@ export default function ProfileContent() {
               <Stack mt="lg" spacing="md">
                 {users.map((u) => (
                   <Card
-                    key={u.email}
+                    key={u.user_id}
                     shadow="sm"
                     p="lg"
                     radius="md"
@@ -533,7 +551,7 @@ export default function ProfileContent() {
                     <Button
                       color="red"
                       mt="md"
-                      onClick={() => handleDeleteUser(u.email)}
+                      onClick={() => handleDeleteUser(u.user_id)}
                     >
                       Felhasználó törlése
                     </Button>
@@ -546,128 +564,256 @@ export default function ProfileContent() {
       }
 
       case "rendelések":
-      if (userRole === "admin") {
-        const toggle = async (id: number) => {
-          setOpenOrder((prev) => (prev === id ? null : id));
+        if (userRole === "admin") {
+          const filteredOrders = orders.filter((o) => {
+            if (filter === "all") return true;
+            return o.status === filter;
+          });
 
-          // Ha még nincs lekérve, akkor kérjük le
-          if (!orderItems[id]) {
+          const completeOrder = async (orderId: number) => {
+            const items = orderItems[orderId];
+            if (!items) return;
+
             try {
               const token = localStorage.getItem("token");
 
-              const resCart = await fetch(`http://127.0.0.1:8000/carts/${id}`, {
+              for (const item of items) {
+                if (!item.inventory_id) continue;
+
+                const newQty = item.stock - item.quantity;
+
+                await fetch(`http://127.0.0.1:8000/inventory/${item.inventory_id}`, {
+                  method: "PATCH",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({
+                    quantity: newQty,
+                    location: item.location,
+                  }),
+                });
+              }
+
+              // Státusz frissítése
+              await fetch(`http://127.0.0.1:8000/orders/${orderId}/status`, {
+                method: "PATCH",
                 headers: {
                   "Content-Type": "application/json",
                   Authorization: `Bearer ${token}`,
                 },
+                body: JSON.stringify({ status: "completed" }),
               });
 
-              const cartData = await resCart.json();
+              setOrderItems((prev) => ({
+                ...prev,
+                [orderId]: items.map((i) => ({ ...i, stock: i.stock - i.quantity })),
+              }));
 
-              const resProducts = await fetch("http://127.0.0.1:8000/products");
-              const products: Product[] = await resProducts.json();
+              setOrders((prev) =>
+                prev.map((o) =>
+                  o.order_id === orderId ? { ...o, status: "completed" } : o
+                )
+              );
 
-              const mergedItems: CartItem[] = cartData.items.map((item: CartItemAPI) => {
-                const product = products.find((p) => p.product_id === item.product_id);
-                return {
-                  id: item.id,
-                  quantity: item.quantity,
-                  name: product?.name || "Ismeretlen termék",
-                  price: product?.price || 0,
-                  image: product?.image || "",
-                };
-              });
-
-              setOrderItems((prev) => ({ ...prev, [id]: mergedItems }));
+              alert("Rendelés teljesítve!");
             } catch (err) {
-              console.error("Hiba a rendelés részleteinek lekérésekor:", err);
+              console.error("Hiba a rendelés teljesítésekor:", err);
+              alert("Hiba történt a teljesítés közben!");
             }
-          }
-        };
+          };
 
-        return (
-          <>
-            <h1>Rendelések kezelése</h1>
+          const toggle = async (id: number) => {
+            setOpenOrder((prev) => (prev === id ? null : id));
 
-            {loading ? (
-              <p>Betöltés...</p>
-            ) : orders.length === 0 ? (
-              <p>Nincs még rendelés.</p>
-            ) : (
-              <Stack mt="lg" spacing="md">
-                {orders.map((order) => {
-                  const opened = openOrder === order.order_id;
-                  const items = orderItems[order.order_id] || [];
+            if (!orderItems[id]) {
+              try {
+                const token = localStorage.getItem("token");
 
-                  return (
-                    <Card
-                      key={order.order_id}
-                      shadow="sm"
-                      padding="lg"
-                      radius="md"
-                      withBorder
-                      style={{ cursor: "pointer", transition: "0.2s" }}
-                      onClick={() => toggle(order.order_id)}
-                    >
-                      {/* Felső rész */}
-                      <Group position="apart">
-                        <Text fw={600}>Rendelés #{order.order_id}</Text>
-                        <Text color="dimmed">
-                          {new Date(order.created_at).toLocaleString()}
-                        </Text>
-                        <Badge color={order.status === "pending" ? "orange" : "green"} variant="light">{order.status}</Badge>
-                      </Group>
+                const resItems = await fetch(`http://127.0.0.1:8000/orders/${id}/items`, {
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                });
 
-                      {opened && (
-                        <>
-                          <Divider my="sm" />
+                if (!resItems.ok) throw new Error("Hiba a rendelési tételek lekérésekor.");
+                const itemData = await resItems.json();
 
-                          <Stack spacing="sm">
-                            <Box>
-                              <Text color="dimmed">Felhasználó ID:</Text>
-                              <Text fw={500}>{order.user_id}</Text>
-                            </Box>
+                const resProducts = await fetch("http://127.0.0.1:8000/products");
+                const products: Product[] = await resProducts.json();
 
-                            <Box>
-                              <Text color="dimmed">Összeg:</Text>
-                              <Text fw={500}>{order.total_price} Ft</Text>
-                            </Box>
+                const resInv = await fetch("http://127.0.0.1:8000/inventory/", {
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                });
 
+                const inventoryData = await resInv.json();
+
+                const mergedItems: CartItem[] = itemData.map((item: any) => {
+                  const product = products.find((p) => p.product_id === item.product_id);
+                  const inventory = inventoryData.find(
+                    (inv: any) => inv.product_id === item.product_id
+                  );
+
+                  return {
+                    id: item.id,
+                    quantity: item.quantity,
+                    name: product?.name || "Ismeretlen termék",
+                    price: product?.price || 0,
+                    image: product?.image || "",
+                    stock: inventory?.quantity ?? 0,
+                    inventory_id: inventory?.inventory_id ?? null,
+                    location: inventory?.location || "",
+                  };
+                });
+
+                setOrderItems((prev) => ({ ...prev, [id]: mergedItems }));
+              } catch (err) {
+                console.error("Hiba a rendelési tételek lekérésekor:", err);
+              }
+            }
+          };
+
+          return (
+            <>
+              <h1>Rendelések kezelése</h1>
+
+              {/* SZŰRŐ GOMBOK */}
+              <SegmentedControl
+                fullWidth
+                mt="md"
+                value={filter}
+                onChange={(v: "all" | "pending" | "completed") => setFilter(v)}
+                data={[
+                  { label: "Összes", value: "all" },
+                  { label: "Függőben", value: "pending" },
+                  { label: "Teljesítve", value: "completed" },
+                ]}
+              />
+
+              {loading ? (
+                <p>Betöltés...</p>
+              ) : filteredOrders.length === 0 ? (
+                <p>Nincs megjeleníthető rendelés.</p>
+              ) : (
+                <Stack mt="lg" spacing="md">
+                  {filteredOrders.map((order) => {
+                    const opened = openOrder === order.order_id;
+                    const items = orderItems[order.order_id] || [];
+
+                    return (
+                      <Card
+                        key={order.order_id}
+                        shadow="sm"
+                        padding="lg"
+                        radius="md"
+                        withBorder
+                        style={{ cursor: "pointer", transition: "0.2s" }}
+                        onClick={() => toggle(order.order_id)}
+                      >
+                        <Group position="apart">
+                          <Text fw={600}>Rendelés #{order.order_id}</Text>
+                          <Text color="dimmed">
+                            {new Date(order.created_at).toLocaleString()}
+                          </Text>
+                          <Badge
+                            color={order.status === "pending" ? "orange" : "green"}
+                            variant="light"
+                          >
+                            {order.status}
+                          </Badge>
+                        </Group>
+
+                        {opened && (
+                          <>
                             <Divider my="sm" />
 
-                            <Text fw={600}>Rendelt termékek:</Text>
+                            <Stack spacing="sm">
+                              <Box>
+                                <Text color="dimmed">Felhasználó ID:</Text>
+                                <Text fw={500}>{order.user_id}</Text>
+                              </Box>
 
-                            {items.length === 0 ? (
-                              <Text color="dimmed" size="sm">Betöltés...</Text>
-                            ) : (
-                              <Stack>
-                                {items.map((item) => (
-                                  <Group key={item.id}>
-                                    <img
-                                      src={item.image}
-                                      alt={item.name}
-                                      style={{ width: 60, height: 60, borderRadius: 8 }}
-                                    />
-                                    <Box>
-                                      <Text fw={500}>{item.name}</Text>
-                                      <Text size="sm" color="dimmed">
-                                        {item.quantity} × {item.price} Ft
-                                      </Text>
-                                    </Box>
-                                  </Group>
-                                ))}
-                              </Stack>
-                            )}
-                          </Stack>
-                        </>
-                      )}
-                    </Card>
-                  );
-                })}
-              </Stack>
-            )}
-          </>
-        );
+                              <Box>
+                                <Text color="dimmed">Összeg:</Text>
+                                <Text fw={500}>{order.total_price} Ft</Text>
+                              </Box>
+
+                              <Divider my="sm" />
+                              <Text fw={600}>Rendelt termékek:</Text>
+
+                              {items.length === 0 ? (
+                                <Text color="dimmed" size="sm">
+                                  Betöltés...
+                                </Text>
+                              ) : (
+                                <Stack>
+                                  {items.map((item) => {
+                                    const stockColor =
+                                      item.stock < item.quantity
+                                        ? "red"
+                                        : item.stock < 10
+                                        ? "orange"
+                                        : "green";
+
+                                    return (
+                                      <Group key={item.id} align="flex-start">
+                                        <img
+                                          src={item.image}
+                                          alt={item.name}
+                                          style={{
+                                            width: 60,
+                                            height: 60,
+                                            borderRadius: 8,
+                                            objectFit: "cover",
+                                          }}
+                                        />
+
+                                        <Stack spacing={2} style={{ flex: 1 }}>
+                                          <Text fw={500}>{item.name}</Text>
+                                          <Text size="sm" color="dimmed">
+                                            {item.quantity} × {item.price} Ft
+                                          </Text>
+
+                                          <Badge color={stockColor} variant="filled">
+                                            Raktáron: {item.stock} db
+                                          </Badge>
+                                        </Stack>
+
+                                        {/* Teljesítés gomb */}
+                                        {order.status === "pending" && (
+                                          <Button
+                                            mt="md"
+                                            color="green"
+                                            disabled={items.some(
+                                              (i) => i.stock < i.quantity
+                                            )}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              completeOrder(order.order_id);
+                                            }}
+                                          >
+                                            Rendelés teljesítése
+                                          </Button>
+                                        )}
+                                      </Group>
+                                    );
+                                  })}
+                                </Stack>
+                              )}
+                            </Stack>
+                          </>
+                        )}
+                      </Card>
+                    );
+                  })}
+                </Stack>
+              )}
+            </>
+          );
       }
 
       case "készletek":
