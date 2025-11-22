@@ -380,7 +380,7 @@ export default function ProfileContent() {
                                     <Box>
                                       <Text fw={500}>{item.name}</Text>
                                       <Text size="sm" color="dimmed">
-                                        {item.quantity} × {item.price} Ft
+                                        {item.quantity} db × {item.price} Ft
                                       </Text>
                                     </Box>
                                   </Group>
@@ -775,7 +775,7 @@ export default function ProfileContent() {
                                         <Stack spacing={2} style={{ flex: 1 }}>
                                           <Text fw={500}>{item.name}</Text>
                                           <Text size="sm" color="dimmed">
-                                            {item.quantity} × {item.price} Ft
+                                            {item.quantity} db × {item.price} Ft
                                           </Text>
 
                                           <Badge color={stockColor} variant="filled">

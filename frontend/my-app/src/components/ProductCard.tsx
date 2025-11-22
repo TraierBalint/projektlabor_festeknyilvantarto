@@ -29,7 +29,7 @@ export default function ProductCard({id, name, price, image, onAddToCart }: Prod
         onChange={(val) => setQuantity(Number(val))}
         min={1}
         max={99}
-        label="Mennyiség (liter)"
+        label="Mennyiség (db)"
         withAsterisk
       />
 
