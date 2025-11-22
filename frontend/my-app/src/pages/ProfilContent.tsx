@@ -13,9 +13,9 @@ type CartItem = {
   price: number;
   quantity: number;
   image: string;
-  stock: number;
-  inventory_id: number | null;
-  location: string;
+  stock?: number | null;
+  inventory_id?: number | null;
+  location?: string;
 };
 
 
@@ -66,6 +66,7 @@ export default function ProfileContent() {
     const [filter, setFilter] = useState<"all" | "pending" | "completed">("all");
     const [stats, setStats] = useState<any>(null);
     const [loadingStats, setLoadingStats] = useState(true);
+    const [loadingOrders, setLoadingOrders] = useState(true);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -138,7 +139,7 @@ export default function ProfileContent() {
       } catch (err: any) {
         console.error(err.message);
       } finally {
-        setLoading(false);
+        setLoadingOrders(false);
       }
     };
     fetchOrders();
@@ -322,9 +323,9 @@ export default function ProfileContent() {
           <div>
             <h1>Rendeléseid</h1>
 
-            {loading ? (
+            {loadingOrders ? (
               <p>Betöltés...</p>
-            ) : orders.length === 0 ? (
+            ) : yourOrders.length === 0 ? (
               <p>Nincsenek rendeléseid.</p>
             ) : (
               <Stack spacing="md" mt="md">
