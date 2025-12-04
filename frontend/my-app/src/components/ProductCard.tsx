@@ -4,12 +4,13 @@ import { useState } from 'react';
 type ProductCardProps = {
   id: number
   name: string
+  description: string
   price: string
   image: string
   onAddToCart: (id: number, quantity: number) => void;
 }
 
-export default function ProductCard({id, name, price, image, onAddToCart }: ProductCardProps) {
+export default function ProductCard({id, name, price, description, image, onAddToCart }: ProductCardProps) {
 
   const [quantity, setQuantity] = useState<number>(1);
 
@@ -21,6 +22,10 @@ export default function ProductCard({id, name, price, image, onAddToCart }: Prod
 
       <Group position="apart" mt="md" mb="xs">
         <Text fw={500}>{name}</Text>
+        <Text fw={300}>{description}</Text>
+      </Group>
+
+      <Group mt="md" mb="xs">
         <Text color="blue" fw={700}>{price}</Text>
       </Group>
 

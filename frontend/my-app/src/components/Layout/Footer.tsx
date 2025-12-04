@@ -1,4 +1,4 @@
-import { Container, Text } from '@mantine/core'
+import { Container, Text, Image, SimpleGrid, Title } from '@mantine/core';
 
 export default function Footer() {
   return (
@@ -6,7 +6,7 @@ export default function Footer() {
       size="md"
       style={{
         textAlign: 'center',
-        padding: '1rem',
+        padding: '2rem 1rem',
         borderTop: '1px solid #ddd',
         marginTop: '2rem',
       }}
@@ -15,5 +15,5 @@ export default function Footer() {
         © 2025 Saját Projekt — Minden jog fenntartva.
       </Text>
     </Container>
-  )
+  );
 }
