@@ -4,7 +4,7 @@ import { Card, Title, Text, Stack, Group, Box, Center, Divider, Badge, Button, N
 import { IconUser, IconMail, IconPhone, IconMapPin } from '@tabler/icons-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ResponsiveContainer, LineChart, Line } from 'recharts';
 
-type Product = { product_id: number; name: string; price: number; image: string };
+type Product = { product_id: number; name: string; price: number; image_url: string };
 type CartItemAPI = { id: number; product_id: number; quantity: number };
 
 type CartItem = {
@@ -12,7 +12,7 @@ type CartItem = {
   name: string;
   price: number;
   quantity: number;
-  image: string;
+  image_url: string;
   stock?: number | null;
   inventory_id?: number | null;
   location?: string;
@@ -308,7 +308,7 @@ export default function ProfileContent() {
                 quantity: item.quantity,
                 name: product?.name || "Ismeretlen termék",
                 price: product?.price || 0,
-                image: product?.image || "",
+                image_url: product?.image_url || "",
               };
             });
 
@@ -374,7 +374,7 @@ export default function ProfileContent() {
                                 {items.map((item) => (
                                   <Group key={item.id}>
                                     <img
-                                      src={item.image}
+                                      src={item.image_url}
                                       alt={item.name}
                                       style={{ width: 60, height: 60, borderRadius: 8 }}
                                     />
@@ -664,7 +664,7 @@ export default function ProfileContent() {
                     quantity: item.quantity,
                     name: product?.name || "Ismeretlen termék",
                     price: product?.price || 0,
-                    image: product?.image || "",
+                    image_url: product?.image_url || "",
                     stock: inventory?.quantity ?? 0,
                     inventory_id: inventory?.inventory_id ?? null,
                     location: inventory?.location || "",
@@ -763,7 +763,7 @@ export default function ProfileContent() {
                                     return (
                                       <Group key={item.id} align="flex-start">
                                         <img
-                                          src={item.image}
+                                          src={item.image_url}
                                           alt={item.name}
                                           style={{
                                             width: 60,
@@ -784,7 +784,10 @@ export default function ProfileContent() {
                                           </Badge>
                                         </Stack>
 
-                                        {/* Teljesítés gomb */}
+                                      </Group>
+                                    );
+                                  })}
+                                  {/* Teljesítés gomb */}
                                         {order.status === "pending" && (
                                           <Button
                                             mt="md"
@@ -800,9 +803,6 @@ export default function ProfileContent() {
                                             Rendelés teljesítése
                                           </Button>
                                         )}
-                                      </Group>
-                                    );
-                                  })}
                                 </Stack>
                               )}
                             </Stack>
@@ -870,6 +870,7 @@ export default function ProfileContent() {
               return (
                 <Card key={inv.inventory_id} shadow="sm" padding="lg" radius="md" withBorder>
                   <Stack spacing="sm">
+                    <Badge color={inv.quantity < 10 ? 'red' : 'green'} variant="light">{inv.quantity < 10 ? 'Rendelés szükséges' : 'Megfelelő raktárkészlet'}</Badge>
                     <Box>
                       <strong>Helyszín:</strong> {inv.location}
                     </Box>
